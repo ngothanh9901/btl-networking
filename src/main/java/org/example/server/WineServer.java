@@ -51,13 +51,12 @@ public class WineServer {
     private void listening(){
         ResponseDTO response = new ResponseDTO("error",null);
         RequestDTO request = receiveData();
+
         if(request.getLabel().equals("addWine")){
             Wine wine = (Wine) request.getValue();
-            boolean result = addWine(wine);
-            if(result){
-                response = new ResponseDTO("ok",null);
-            }
+            response = new ResponseDTO("ok",null);
         }
+
         sendData(response);
     }
     private void sendData(ResponseDTO response){
@@ -96,9 +95,9 @@ public class WineServer {
     }
 
 
-    private boolean addWine(Wine wine){
+    private int addWine(Wine wine){
         String sql = "INSERT INTO wine(code,name,concentration,yearManufacture,image,producerId) VALUES (?,?,?,?,?,?)";
-        boolean result=false;
+        int result=0;
         try {
             PreparedStatement myStmt = con.prepareStatement(sql);
             myStmt.setString(1,wine.getCode());
@@ -108,7 +107,7 @@ public class WineServer {
             myStmt.setString(5,wine.getImage());
             myStmt.setLong(6,wine.getProducerId());
 
-            result = myStmt.execute();
+            result = myStmt.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
