@@ -1,14 +1,13 @@
-package org.example.client;
+package org.example.client.ui;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
-public class WineUI extends JFrame{
+public class WineUI extends View{
     public JTextField txtCode, txtName, txtImage, txtAlcoholContent, txtYear;
     public JComboBox<String> cboManufacturer;
-    public JButton btnSearch, btnAdd, btnUpdate, btnDelete;
+    public JButton btnSearch, btnAdd, btnUpdate, btnDelete,btnClear;
     public DefaultTableModel tblModel;
     public JTable tblWine;
 
@@ -32,6 +31,7 @@ public class WineUI extends JFrame{
         btnAdd = new JButton("Add");
         btnUpdate = new JButton("Update");
         btnDelete = new JButton("Delete");
+        btnClear = new JButton("Clear");
         tblModel = new DefaultTableModel(new Object[]{"Code", "Name", "Wine Content", "Year", "Image","Manufacturer"}, 0);
         tblWine = new JTable(tblModel);
 
@@ -57,6 +57,7 @@ public class WineUI extends JFrame{
         pnlButtons.add(btnAdd);
         pnlButtons.add(btnUpdate);
         pnlButtons.add(btnDelete);
+        pnlButtons.add(btnClear);
 
         JScrollPane scrollPane = new JScrollPane(tblWine);
 
@@ -70,105 +71,5 @@ public class WineUI extends JFrame{
         this.pack();
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    }
-
-    public void actionPerformed(ActionEvent e) {
-
-    }
-    public void showMessage(String msg){
-        JOptionPane.showMessageDialog(this, msg);
-    }
-
-    public static void main(String[] args) {
-        WineUI ui = new WineUI();
-        ui.setVisible(true);
-    }
-
-    public JTextField getTxtCode() {
-        return txtCode;
-    }
-
-    public void setTxtCode(JTextField txtCode) {
-        this.txtCode = txtCode;
-    }
-
-    public JTextField getTxtName() {
-        return txtName;
-    }
-
-    public void setTxtName(JTextField txtName) {
-        this.txtName = txtName;
-    }
-
-    public JTextField getTxtAlcoholContent() {
-        return txtAlcoholContent;
-    }
-
-    public void setTxtAlcoholContent(JTextField txtAlcoholContent) {
-        this.txtAlcoholContent = txtAlcoholContent;
-    }
-
-    public JTextField getTxtYear() {
-        return txtYear;
-    }
-
-    public void setTxtYear(JTextField txtYear) {
-        this.txtYear = txtYear;
-    }
-
-    public JComboBox<String> getCboManufacturer() {
-        return cboManufacturer;
-    }
-
-    public void setCboManufacturer(JComboBox<String> cboManufacturer) {
-        this.cboManufacturer = cboManufacturer;
-    }
-
-    public JButton getBtnSearch() {
-        return btnSearch;
-    }
-
-    public void setBtnSearch(JButton btnSearch) {
-        this.btnSearch = btnSearch;
-    }
-
-    public JButton getBtnAdd() {
-        return btnAdd;
-    }
-
-    public void setBtnAdd(JButton btnAdd) {
-        this.btnAdd = btnAdd;
-    }
-
-    public JButton getBtnUpdate() {
-        return btnUpdate;
-    }
-
-    public void setBtnUpdate(JButton btnUpdate) {
-        this.btnUpdate = btnUpdate;
-    }
-
-    public JButton getBtnDelete() {
-        return btnDelete;
-    }
-
-    public void setBtnDelete(JButton btnDelete) {
-        this.btnDelete = btnDelete;
-    }
-
-    public DefaultTableModel getTblModel() {
-        return tblModel;
-    }
-
-    public void setTblModel(DefaultTableModel tblModel) {
-        this.tblModel = tblModel;
-    }
-
-    public JTable getTblWine() {
-        return tblWine;
-    }
-
-    public void setTblWine(JTable tblWine) {
-        this.tblWine = tblWine;
     }
 }

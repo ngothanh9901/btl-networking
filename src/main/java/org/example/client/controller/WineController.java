@@ -1,5 +1,6 @@
-package org.example.client;
+package org.example.client.controller;
 
+import org.example.client.ui.WineUI;
 import org.example.dto.RequestDTO;
 import org.example.dto.ResponseDTO;
 import org.example.model.Wine;
@@ -32,6 +33,7 @@ public class WineController implements ActionListener{
         view.btnAdd.addActionListener(this);
         view.btnUpdate.addActionListener(this);
         view.btnDelete.addActionListener(this);
+        view.btnClear.addActionListener(this);
 
         openConnection();
         showWines();
@@ -138,6 +140,13 @@ public class WineController implements ActionListener{
             } else {
                 JOptionPane.showMessageDialog(view, "Please select a wine to delete.");
             }
+        }else if(e.getSource() == view.btnClear){
+            view.txtCode.setText("");
+            view.txtName.setText("");
+            view.txtAlcoholContent.setText("");
+            view.txtYear.setText("");
+            view.txtImage.setText("");
+            view.cboManufacturer.setSelectedIndex(0);
         }
     }
 

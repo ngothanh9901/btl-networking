@@ -2,7 +2,10 @@ package org.example.server;
 
 import org.example.dto.RequestDTO;
 import org.example.dto.ResponseDTO;
+import org.example.model.Producer;
 import org.example.model.Wine;
+import org.example.server.dao.ProducerDAO;
+import org.example.server.service.ProducerService;
 import org.example.server.service.WineService;
 
 import java.io.*;
@@ -50,8 +53,21 @@ public class ServerController {
              String code = (String) request.getValue();
             response = WineService.deleteWineByCode(code);
         }
-
-
+        if(request.getLabel().equals("getAllProducer")){
+            response = ProducerService.getAll();
+        }
+        if(request.getLabel().equals("addProducer")){
+            Producer producer = (Producer) request.getValue();
+            response = ProducerService.addProducer(producer);
+        }
+        if(request.getLabel().equals("updateProducer")){
+            Producer producer = (Producer) request.getValue();
+            response = ProducerService.updateProducer(producer);
+        }
+        if(request.getLabel().equals("deleteProducerByCode")){
+            String code = (String) request.getValue();
+            response = ProducerService.deleteProducerByCode(code);
+        }
         sendData(response);
     }
     private void sendData(ResponseDTO response){
