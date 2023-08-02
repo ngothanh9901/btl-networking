@@ -3,42 +3,25 @@ package org.example.server;
 import org.example.dto.RequestDTO;
 import org.example.dto.ResponseDTO;
 import org.example.model.Wine;
+import org.example.server.service.WineService;
 
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
-public class WineServer {
-    private WineServerView view;
-    private Connection con;
+public class ServerController {
+    private ServerView view;
     private DatagramSocket myServer;
     private int serverPort = 9901;
     private DatagramPacket receivePacket = null;
 
-    public WineServer(WineServerView view){
+    public ServerController(ServerView view){
         this.view = view;
-        getDBConnection("ltm", "root", "123456789");
         openServer(serverPort);
         view.showMessage("UDP server is running...");
         while(true){
             listening();
-        }
-    }
-    private void getDBConnection(String dbName, String username, String
-            password){
-
-        String dbUrl = "jdbc:mysql://localhost:3306/" + dbName;
-        String dbClass = "com.mysql.jdbc.Driver";
-        try {
-            Class.forName(dbClass);
-            con = DriverManager.getConnection (dbUrl, username, password);
-        }catch(Exception e) {
-            view.showMessage(e.getStackTrace().toString());
         }
     }
     private void openServer(int portNumber){
@@ -51,11 +34,23 @@ public class WineServer {
     private void listening(){
         ResponseDTO response = new ResponseDTO("error",null);
         RequestDTO request = receiveData();
-
+        System.out.println("Have a request");
         if(request.getLabel().equals("addWine")){
             Wine wine = (Wine) request.getValue();
-            response = new ResponseDTO("ok",null);
+            response = WineService.addWine(wine);
         }
+        if(request.getLabel().equals("getAll")){
+            response = WineService.getAll();
+        }
+        if(request.getLabel().equals("updateWine")){
+            Wine wine = (Wine) request.getValue();
+            response = WineService.updateWine(wine);
+        }
+        if(request.getLabel().equals("deleteWineByCode")){
+             String code = (String) request.getValue();
+            response = WineService.deleteWineByCode(code);
+        }
+
 
         sendData(response);
     }
@@ -92,25 +87,5 @@ public class WineServer {
             view.showMessage(ex.getStackTrace().toString());
         }
         return null;
-    }
-
-
-    private int addWine(Wine wine){
-        String sql = "INSERT INTO wine(code,name,concentration,yearManufacture,image,producerId) VALUES (?,?,?,?,?,?)";
-        int result=0;
-        try {
-            PreparedStatement myStmt = con.prepareStatement(sql);
-            myStmt.setString(1,wine.getCode());
-            myStmt.setString(2,wine.getName());
-            myStmt.setDouble(3,wine.getConcentration());
-            myStmt.setLong(4,wine.getYearManufacture());
-            myStmt.setString(5,wine.getImage());
-            myStmt.setLong(6,wine.getProducerId());
-
-            result = myStmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return result;
     }
 }

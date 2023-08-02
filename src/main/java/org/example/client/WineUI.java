@@ -32,7 +32,7 @@ public class WineUI extends JFrame{
         btnAdd = new JButton("Add");
         btnUpdate = new JButton("Update");
         btnDelete = new JButton("Delete");
-        tblModel = new DefaultTableModel(new Object[]{"Code", "Name", "Wine Content", "Year", "Manufacturer"}, 0);
+        tblModel = new DefaultTableModel(new Object[]{"Code", "Name", "Wine Content", "Year", "Image","Manufacturer"}, 0);
         tblWine = new JTable(tblModel);
 
         // Create layout
