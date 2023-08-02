@@ -19,7 +19,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.List;
 
-public class WineController implements ActionListener{
+public class WineController extends Controller implements ActionListener{
     private WineUI view;
     private int serverPort = 9901;
     private int clientPort = 6666;
@@ -27,6 +27,7 @@ public class WineController implements ActionListener{
     private DatagramSocket myClient;
 
     public WineController(WineUI view){
+        super(view);
         this.view = view;
         // Add action listeners
         view.btnSearch.addActionListener(this);
@@ -63,15 +64,7 @@ public class WineController implements ActionListener{
             String manufacturer = (String) view.cboManufacturer.getSelectedItem();
             // TODO: Search for wine based on criteria and update table
         } else if (e.getSource() == view.btnAdd) {
-            String code = view.txtCode.getText();
-            String name = view.txtName.getText();
-            String alcoholContent = view.txtAlcoholContent.getText();
-            String year = view.txtYear.getText();
-            String image = view.txtImage.getText();
-            String manufacturer = (String) view.cboManufacturer.getSelectedItem();
-
-
-            Wine wine = new Wine(code,name,Double.valueOf(alcoholContent),Long.valueOf(year),image,Long.valueOf(manufacturer));
+            Wine wine = convertToModel();
             Object[] row = new Object[]{wine.getCode(),wine.getName(), wine.getConcentration(),wine.getYearManufacture(),wine.getImage(), wine.getProducerId()};
 
             RequestDTO request = new RequestDTO("addWine",wine);
@@ -93,14 +86,7 @@ public class WineController implements ActionListener{
         } else if (e.getSource() == view.btnUpdate) {
             int rowIndex = view.tblWine.getSelectedRow();
             if (rowIndex >= 0) {
-                String code = view.txtCode.getText();
-                String name = view.txtName.getText();
-                String alcoholContent = view.txtAlcoholContent.getText();
-                String year = view.txtYear.getText();
-                String image = view.txtImage.getText();
-                String manufacturer = (String) view.cboManufacturer.getSelectedItem();
-
-                Wine wine = new Wine(code,name,Double.valueOf(alcoholContent),Long.valueOf(year),image,Long.valueOf(manufacturer));
+                Wine wine = convertToModel();
                 Object[] row = new Object[]{wine.getCode(),wine.getName(), wine.getConcentration(),wine.getYearManufacture(),wine.getImage(), wine.getProducerId()};
 
                 RequestDTO request = new RequestDTO("updateWine",wine);
@@ -109,12 +95,12 @@ public class WineController implements ActionListener{
                 ResponseDTO response = receiveData();
 
                 if(response.getStatus().equals("ok")){
-                    view.tblModel.setValueAt(code, rowIndex, 0);
-                    view.tblModel.setValueAt(name, rowIndex, 1);
-                    view.tblModel.setValueAt(alcoholContent, rowIndex, 2);
-                    view.tblModel.setValueAt(year, rowIndex, 3);
-                    view.tblModel.setValueAt(image,rowIndex,4);
-                    view.tblModel.setValueAt(manufacturer, rowIndex, 5);
+                    view.tblModel.setValueAt(wine.getCode(), rowIndex, 0);
+                    view.tblModel.setValueAt(wine.getName(), rowIndex, 1);
+                    view.tblModel.setValueAt(wine.getConcentration(), rowIndex, 2);
+                    view.tblModel.setValueAt(wine.getYearManufacture(), rowIndex, 3);
+                    view.tblModel.setValueAt(wine.getImage(),rowIndex,4);
+                    view.tblModel.setValueAt(String.valueOf(wine.getProducerId()), rowIndex, 5);
                 }else{
                     JOptionPane.showMessageDialog(view, "Some errors have occurred");
                 }
@@ -149,57 +135,6 @@ public class WineController implements ActionListener{
             view.cboManufacturer.setSelectedIndex(0);
         }
     }
-
-    private void openConnection(){
-        try {
-
-            myClient = new DatagramSocket(clientPort);
-        } catch (Exception ex) {
-            view.showMessage(ex.getStackTrace().toString());
-        }
-    }
-    private void closeConnection(){
-        try {
-
-            myClient.close();
-        } catch (Exception ex) {
-            view.showMessage(ex.getStackTrace().toString());
-        }
-    }
-    private void sendData(RequestDTO request){
-        try {
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(request);
-            oos.flush();
-            InetAddress IPAddress = InetAddress.getByName(serverHost);
-            byte[] sendData = baos.toByteArray();
-            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, serverPort);
-
-            myClient.send(sendPacket);
-        } catch (Exception ex) {
-            view.showMessage(ex.getStackTrace().toString());
-        }
-    }
-    private ResponseDTO receiveData(){
-        ResponseDTO response = null;
-        try {
-
-            byte[] receiveData = new byte[1024];
-            DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-            myClient.receive(receivePacket);
-            ByteArrayInputStream bais = new ByteArrayInputStream(receiveData);
-
-            ObjectInputStream ois = new ObjectInputStream(bais);
-            response = (ResponseDTO) ois.readObject();
-
-        } catch (Exception ex) {
-            view.showMessage(ex.getStackTrace().toString());
-        }
-
-        return response;
-    }
     private void showWines(){
         RequestDTO request = new RequestDTO("getAll",null);
         sendData(request);
@@ -211,5 +146,17 @@ public class WineController implements ActionListener{
             Object[] row = new Object[]{wine.getCode(),wine.getName(), wine.getConcentration(),wine.getYearManufacture(),wine.getImage(), wine.getProducerId()};
             view.tblModel.addRow(row);
         }
+    }
+    private Wine convertToModel(){
+        String code = view.txtCode.getText();
+        String name = view.txtName.getText();
+        String alcoholContent = view.txtAlcoholContent.getText();
+        String year = view.txtYear.getText();
+        String image = view.txtImage.getText();
+        String manufacturer = (String) view.cboManufacturer.getSelectedItem();
+
+
+        Wine wine = new Wine(code,name,Double.valueOf(alcoholContent),Long.valueOf(year),image,Long.valueOf(manufacturer));
+        return wine;
     }
 }

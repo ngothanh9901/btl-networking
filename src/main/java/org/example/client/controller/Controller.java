@@ -5,6 +5,7 @@ import org.example.client.ui.View;
 import org.example.dto.RequestDTO;
 import org.example.dto.ResponseDTO;
 
+import javax.swing.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -14,18 +15,18 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class Controller {
-  private View view;
-  private int serverPort = 9901;
-  private int clientPort = 6669;
-  private String serverHost = "localhost";
-  private DatagramSocket myClient;
+  protected View view;
+  protected int serverPort = 9901;
+  protected int clientPort = 6669;
+  protected String serverHost = "localhost";
+  protected DatagramSocket myClient;
 
   public Controller(View view) {
     this.view = view;
     openConnection();
   }
 
-  private ResponseDTO receiveData(){
+  protected ResponseDTO receiveData(){
     ResponseDTO response = null;
     try {
 
@@ -42,7 +43,7 @@ public class Controller {
     }
     return response;
   }
-  private void sendData(RequestDTO request){
+  protected void sendData(RequestDTO request){
     try {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -57,11 +58,30 @@ public class Controller {
       view.showMessage(ex.getStackTrace().toString());
     }
   }
-  private void openConnection(){
+  protected void openConnection(){
     try {
       myClient = new DatagramSocket(clientPort);
     } catch (Exception ex) {
       view.showMessage(ex.getStackTrace().toString());
     }
+  }
+  private void closeConnection(){
+    try {
+
+      myClient.close();
+    } catch (Exception ex) {
+      view.showMessage(ex.getStackTrace().toString());
+    }
+  }
+  protected ResponseDTO sendRequest(RequestDTO request,Object[] row){
+    sendData(request);
+    ResponseDTO response = receiveData();
+
+    if(response.getStatus().equals("ok")){
+      view.tblModel.addRow(row);
+    }else{
+      JOptionPane.showMessageDialog(view, "An error has appeared");
+    }
+    return response;
   }
 }

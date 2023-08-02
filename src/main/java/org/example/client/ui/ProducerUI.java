@@ -7,7 +7,7 @@ import java.awt.event.ActionEvent;
 public class ProducerUI extends View{
     public JTextField txtName, txtDescription,txtCode;
     public JButton btnSearch, btnAdd, btnUpdate, btnDelete,btnClear;
-    public DefaultTableModel tblModel;
+
     public JTable tblProducer;
     public ProducerUI() {
         super("Wine Management");
