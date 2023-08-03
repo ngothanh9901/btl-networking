@@ -1,8 +1,10 @@
 package org.example.client.controller;
 
+import org.example.client.ui.ProducerUI;
 import org.example.client.ui.WineUI;
 import org.example.dto.RequestDTO;
 import org.example.dto.ResponseDTO;
+import org.example.model.Producer;
 import org.example.model.Wine;
 
 import javax.swing.*;
@@ -18,13 +20,14 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class WineController extends Controller implements ActionListener{
     private WineUI view;
     private int serverPort = 9901;
     private int clientPort = 6666;
     private String serverHost = "localhost";
-    private DatagramSocket myClient;
+    private List<Producer> producers = null;
 
     public WineController(WineUI view){
         super(view);
@@ -35,9 +38,19 @@ public class WineController extends Controller implements ActionListener{
         view.btnUpdate.addActionListener(this);
         view.btnDelete.addActionListener(this);
         view.btnClear.addActionListener(this);
+        view.btnMenu.addActionListener(this);
 
-        openConnection();
-        showWines();
+
+
+        RequestDTO request = new RequestDTO("getAllProducer",null);
+        sendData(request);
+        ResponseDTO response = receiveData();
+        producers = (List<Producer>) response.getValue();
+
+        view.cboManufacturer.addItem(new Producer(null,"Không lựa chọn",null));
+        for(Producer producer:producers){
+            view.cboManufacturer.addItem(producer);
+        }
 
         view.tblWine.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
             public void valueChanged(ListSelectionEvent event) {
@@ -48,24 +61,29 @@ public class WineController extends Controller implements ActionListener{
                     view.txtAlcoholContent.setText(String.valueOf(view.tblModel.getValueAt(rowIndex, 2)));
                     view.txtYear.setText(String.valueOf( view.tblModel.getValueAt(rowIndex, 3)));
                     view.txtImage.setText(String.valueOf(view.tblModel.getValueAt(rowIndex,4)));
+
+                    Producer producer = producers.stream().filter(i->i.getName().equals(view.tblModel.getValueAt(rowIndex,5))).collect(Collectors.toList()).get(0);
+                    view.cboManufacturer.setSelectedItem(producer);
                 }
             }
         });
+
+        showWines(null);
     }
     @Override
     public void actionPerformed(ActionEvent e) {
 
         if (e.getSource() == view.btnSearch) {
-            String code = view.txtCode.getText();
-            String name = view.txtName.getText();
-            String image = view.txtImage.getText();
-            String alcoholContent = view.txtAlcoholContent.getText();
-            String year = view.txtYear.getText();
-            String manufacturer = (String) view.cboManufacturer.getSelectedItem();
+
+            Wine wine = convertToModel();
+            RequestDTO request = new RequestDTO("searchWine", wine);
+            showWines(request);
+
             // TODO: Search for wine based on criteria and update table
         } else if (e.getSource() == view.btnAdd) {
             Wine wine = convertToModel();
-            Object[] row = new Object[]{wine.getCode(),wine.getName(), wine.getConcentration(),wine.getYearManufacture(),wine.getImage(), wine.getProducerId()};
+            Producer producer = (Producer) view.cboManufacturer.getSelectedItem();
+            Object[] row = new Object[]{wine.getCode(),wine.getName(), wine.getConcentration(),wine.getYearManufacture(),wine.getImage(), producer.getName()};
 
             RequestDTO request = new RequestDTO("addWine",wine);
             sendData(request);
@@ -87,7 +105,7 @@ public class WineController extends Controller implements ActionListener{
             int rowIndex = view.tblWine.getSelectedRow();
             if (rowIndex >= 0) {
                 Wine wine = convertToModel();
-                Object[] row = new Object[]{wine.getCode(),wine.getName(), wine.getConcentration(),wine.getYearManufacture(),wine.getImage(), wine.getProducerId()};
+                Producer producer = (Producer) view.cboManufacturer.getSelectedItem();
 
                 RequestDTO request = new RequestDTO("updateWine",wine);
                 sendData(request);
@@ -100,7 +118,7 @@ public class WineController extends Controller implements ActionListener{
                     view.tblModel.setValueAt(wine.getConcentration(), rowIndex, 2);
                     view.tblModel.setValueAt(wine.getYearManufacture(), rowIndex, 3);
                     view.tblModel.setValueAt(wine.getImage(),rowIndex,4);
-                    view.tblModel.setValueAt(String.valueOf(wine.getProducerId()), rowIndex, 5);
+                    view.tblModel.setValueAt(producer.getName(), rowIndex, 5);
                 }else{
                     JOptionPane.showMessageDialog(view, "Some errors have occurred");
                 }
@@ -133,30 +151,56 @@ public class WineController extends Controller implements ActionListener{
             view.txtYear.setText("");
             view.txtImage.setText("");
             view.cboManufacturer.setSelectedIndex(0);
+        }else if(e.getSource() == view.btnMenu){
+            this.closeConnection();
+            ProducerUI producerView = new ProducerUI();
+            Controller control = new ProducerController(producerView);
+            producerView.setVisible(true);
+
+            view.setVisible(false);
+            view.dispose();
         }
     }
-    private void showWines(){
-        RequestDTO request = new RequestDTO("getAll",null);
-        sendData(request);
+    private void showWines(RequestDTO request){
 
+        while (view.tblModel.getRowCount() > 0) {
+            view.tblModel.removeRow(0);
+        }
+
+        // get all Wines
+        if(request==null) request = new RequestDTO("getAll",null);
+        sendData(request);
         ResponseDTO response = receiveData();
         List<Wine> wines = (List<Wine>) response.getValue();
 
+        //show all wines to UI
         for(Wine wine:wines){
-            Object[] row = new Object[]{wine.getCode(),wine.getName(), wine.getConcentration(),wine.getYearManufacture(),wine.getImage(), wine.getProducerId()};
+            Producer producer = producers.stream().filter(i->i.getId().equals(wine.getProducerId())).collect(Collectors.toList()).get(0);
+            Object[] row = new Object[]{wine.getCode(),wine.getName(), wine.getConcentration(),wine.getYearManufacture(),wine.getImage(),producer.getName()};
             view.tblModel.addRow(row);
         }
+
     }
     private Wine convertToModel(){
         String code = view.txtCode.getText();
         String name = view.txtName.getText();
-        String alcoholContent = view.txtAlcoholContent.getText();
-        String year = view.txtYear.getText();
+        Double alcoholContent = null;
+        try {
+            if(view.txtAlcoholContent.getText()!=null && !view.txtAlcoholContent.getText().isBlank()) alcoholContent = Double.valueOf(view.txtAlcoholContent.getText());
+        } catch (NumberFormatException ne){
+            JOptionPane.showMessageDialog(view, "malformed Content field");
+        }
+        Long year = null;
+        try {
+            if(view.txtYear.getText() !=null && !view.txtYear.getText().isBlank()) year = Long.valueOf(view.txtYear.getText());
+        } catch (NumberFormatException ne) {
+            JOptionPane.showMessageDialog(view, "malformed YEAR field");
+        }
         String image = view.txtImage.getText();
-        String manufacturer = (String) view.cboManufacturer.getSelectedItem();
+        Producer manufacturer = (Producer) view.cboManufacturer.getSelectedItem();
 
 
-        Wine wine = new Wine(code,name,Double.valueOf(alcoholContent),Long.valueOf(year),image,Long.valueOf(manufacturer));
+        Wine wine = new Wine(code,name,alcoholContent,year,image, manufacturer.getId());
         return wine;
     }
 }

@@ -22,7 +22,7 @@ public class ProducerDAO {
       ps = connection.prepareStatement(sql);
       rs = ps.executeQuery();
       while(rs.next()){
-        Producer producer = new Producer(rs.getString("code"),rs.getString("name"),rs.getString("description"));
+        Producer producer = new Producer(rs.getLong("id"),rs.getString("code"),rs.getString("name"),rs.getString("description"));
         producers.add(producer);
       }
       return producers;
@@ -67,6 +67,26 @@ public class ProducerDAO {
       ps = connection.prepareStatement(sql);
       ps.setString(1,code);
       int result = ps.executeUpdate();
+      return result;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+  public static List<Producer> searchProducer(Producer parameter){
+    List<Producer> result = new ArrayList<>();
+
+    String sql = "SELECT * FROM producer WHERE 1=1";
+    if(!parameter.getCode().isBlank()) sql += " AND code LIKE '%" + parameter.getCode() + "%'";
+    if(!parameter.getName().isBlank()) sql += " AND name LIKE '%" + parameter.getName() + "%'";
+    if(!parameter.getDescription().isBlank()) sql += " AND description LIKE '%" + parameter.getDescription() + "%'";
+
+    try {
+      ps = connection.prepareStatement(sql);
+      rs = ps.executeQuery();
+      while(rs.next()){
+        Producer producer = new Producer(rs.getString("code"),rs.getString("name"),rs.getString("description"));
+        result.add(producer);
+      }
       return result;
     } catch (SQLException e) {
       throw new RuntimeException(e);

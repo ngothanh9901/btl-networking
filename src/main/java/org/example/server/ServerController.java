@@ -5,6 +5,7 @@ import org.example.dto.ResponseDTO;
 import org.example.model.Producer;
 import org.example.model.Wine;
 import org.example.server.dao.ProducerDAO;
+import org.example.server.dao.WineDAO;
 import org.example.server.service.ProducerService;
 import org.example.server.service.WineService;
 
@@ -13,30 +14,22 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
-public class ServerController {
-    private ServerView view;
+public class ServerController extends Thread{
     private DatagramSocket myServer;
-    private int serverPort = 9901;
     private DatagramPacket receivePacket = null;
+    private RequestDTO request;
 
-    public ServerController(ServerView view){
-        this.view = view;
-        openServer(serverPort);
-        view.showMessage("UDP server is running...");
-        while(true){
-            listening();
-        }
+    public ServerController(RequestDTO request,DatagramSocket myServer,DatagramPacket receivePacket){
+        this.request = request;
+        this.myServer = myServer;
+        this.receivePacket = receivePacket;
     }
-    private void openServer(int portNumber){
-        try {
-            myServer = new DatagramSocket(portNumber);
-        }catch(IOException e) {
-            view.showMessage(e.toString());
-        }
+    public void run(){
+        listening(request);
     }
-    private void listening(){
+    private void listening(RequestDTO request){
         ResponseDTO response = new ResponseDTO("error",null);
-        RequestDTO request = receiveData();
+//        RequestDTO request = receiveData();
         System.out.println("Have a request");
         if(request.getLabel().equals("addWine")){
             Wine wine = (Wine) request.getValue();
@@ -53,6 +46,10 @@ public class ServerController {
              String code = (String) request.getValue();
             response = WineService.deleteWineByCode(code);
         }
+        if(request.getLabel().equals("searchWine")){
+            Wine wine = (Wine) request.getValue();
+            response = WineService.searchWine(wine);
+        }
         if(request.getLabel().equals("getAllProducer")){
             response = ProducerService.getAll();
         }
@@ -67,6 +64,10 @@ public class ServerController {
         if(request.getLabel().equals("deleteProducerByCode")){
             String code = (String) request.getValue();
             response = ProducerService.deleteProducerByCode(code);
+        }
+        if(request.getLabel().equals("searchProducer")){
+            Producer producer = (Producer) request.getValue();
+            response = ProducerService.searchProducer(producer);
         }
         sendData(response);
     }
@@ -84,24 +85,7 @@ public class ServerController {
 
             myServer.send(sendPacket);
         } catch (Exception ex) {
-            view.showMessage(ex.getStackTrace().toString());
+            System.out.println(ex);
         }
-    }
-    private RequestDTO receiveData(){
-        try {
-
-            byte[] receiveData = new byte[1024];
-
-            receivePacket = new DatagramPacket(receiveData, receiveData.length);
-            myServer.receive(receivePacket);
-            ByteArrayInputStream bais = new ByteArrayInputStream(receiveData);
-
-            ObjectInputStream ois = new ObjectInputStream(bais);
-            RequestDTO request= (RequestDTO) ois.readObject();
-            return request;
-        } catch (Exception ex) {
-            view.showMessage(ex.getStackTrace().toString());
-        }
-        return null;
     }
 }

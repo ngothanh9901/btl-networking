@@ -28,4 +28,8 @@ public class ProducerService {
     if(result==0) return new ResponseDTO("error",null);
     return new ResponseDTO("ok",null);
   }
+  public static ResponseDTO searchProducer(Producer parameter){
+    List<Producer> result = ProducerDAO.searchProducer(parameter);
+    return new ResponseDTO("ok",result);
+  }
 }

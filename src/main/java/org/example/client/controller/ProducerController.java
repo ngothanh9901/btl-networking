@@ -1,6 +1,7 @@
 package org.example.client.controller;
 
 import org.example.client.ui.ProducerUI;
+import org.example.client.ui.WineUI;
 import org.example.dto.RequestDTO;
 import org.example.dto.ResponseDTO;
 import org.example.model.Producer;
@@ -23,9 +24,10 @@ public class ProducerController extends Controller implements ActionListener {
         view.btnUpdate.addActionListener(this);
         view.btnDelete.addActionListener(this);
         view.btnClear.addActionListener(this);
+        view.btnMenu.addActionListener(this);
 
-        openConnection();
-        showProducer();
+//        openConnection();
+        showProducer(null);
         view.tblProducer.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
             public void valueChanged(ListSelectionEvent event) {
                 int rowIndex = view.tblProducer.getSelectedRow();
@@ -86,14 +88,33 @@ public class ProducerController extends Controller implements ActionListener {
             } else {
                 JOptionPane.showMessageDialog(view, "Please select a wine to delete.");
             }
+        }else if(e.getSource() == view.btnSearch){
+            Producer producer = convertToModel();
+            RequestDTO request = new RequestDTO("searchProducer",producer);
+            sendData(request);
+
+            showProducer(request);
+
         } else if(e.getSource() == view.btnClear){
             view.txtCode.setText("");
             view.txtName.setText("");
             view.txtDescription.setText("");
+        }else if(e.getSource() == view.btnMenu){
+            this.closeConnection();
+            WineUI wineView = new WineUI();
+            Controller control = new WineController(wineView);
+            wineView.setVisible(true);
+
+            view.setVisible(false);
+            view.dispose();
         }
     }
-    private void showProducer(){
-        RequestDTO request = new RequestDTO("getAllProducer",null);
+    private void showProducer(RequestDTO request){
+        while (view.tblModel.getRowCount() > 0) {
+            view.tblModel.removeRow(0);
+        }
+
+        if(request==null)  request = new RequestDTO("getAllProducer",null);
         sendData(request);
 
         ResponseDTO response = receiveData();

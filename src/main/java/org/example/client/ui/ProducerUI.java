@@ -6,7 +6,7 @@ import java.awt.event.ActionEvent;
 
 public class ProducerUI extends View{
     public JTextField txtName, txtDescription,txtCode;
-    public JButton btnSearch, btnAdd, btnUpdate, btnDelete,btnClear;
+    public JButton btnSearch, btnAdd, btnUpdate, btnDelete,btnClear,btnMenu;
 
     public JTable tblProducer;
     public ProducerUI() {
@@ -26,6 +26,7 @@ public class ProducerUI extends View{
         btnUpdate = new JButton("Update");
         btnDelete = new JButton("Delete");
         btnClear = new JButton("Clear");
+        btnMenu = new JButton("Menu");
         tblModel = new DefaultTableModel(new Object[]{"Code","Name","Description"}, 0);
         tblProducer = new JTable(tblModel);
 
@@ -44,7 +45,9 @@ public class ProducerUI extends View{
         pnlButtons.add(btnAdd);
         pnlButtons.add(btnUpdate);
         pnlButtons.add(btnDelete);
+        pnlButtons.add(btnSearch);
         pnlButtons.add(btnClear);
+        pnlButtons.add(btnMenu);
 
         JScrollPane scrollPane = new JScrollPane(tblProducer);
 

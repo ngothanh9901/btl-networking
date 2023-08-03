@@ -1,5 +1,6 @@
 package org.example.server.dao;
 
+import org.example.model.Producer;
 import org.example.model.Wine;
 
 import java.sql.Connection;
@@ -71,6 +72,29 @@ public class WineDAO {
       ps = connection.prepareStatement(sql);
       ps.setString(1,code);
       int result = ps.executeUpdate();
+      return result;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+  public static List<Wine> searchWine(Wine parameter){
+    List<Wine> result = new ArrayList<>();
+
+    String sql = "SELECT * FROM wine WHERE 1=1";
+
+    if(parameter.getCode()!=null && !parameter.getCode().isBlank()) sql += " AND code LIKE '%" + parameter.getCode() + "%'";
+    if(parameter.getName()!=null && !parameter.getName().isBlank()) sql += " AND name LIKE '%" + parameter.getName() + "%'";
+    if(parameter.getConcentration()!=null && !parameter.getConcentration().isNaN()) sql += " AND concentration >= " + parameter.getConcentration();
+    if(parameter.getYearManufacture()!=null) sql += " AND yearManufacture = " + parameter.getYearManufacture();
+    if(parameter.getProducerId()!=null) sql += " AND producerId = " + parameter.getProducerId();
+
+    try {
+      ps = connection.prepareStatement(sql);
+      rs = ps.executeQuery();
+      while(rs.next()){
+        Wine wine = new Wine(rs.getString("code"),rs.getString("name"),rs.getDouble("concentration"),rs.getLong("yearManufacture"),rs.getString("image"),rs.getLong("producerId"));
+        result.add(wine);
+      }
       return result;
     } catch (SQLException e) {
       throw new RuntimeException(e);

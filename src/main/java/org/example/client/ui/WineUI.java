@@ -1,4 +1,6 @@
 package org.example.client.ui;
+import org.example.model.Producer;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -6,8 +8,8 @@ import java.awt.event.ActionEvent;
 
 public class WineUI extends View{
     public JTextField txtCode, txtName, txtImage, txtAlcoholContent, txtYear;
-    public JComboBox<String> cboManufacturer;
-    public JButton btnSearch, btnAdd, btnUpdate, btnDelete,btnClear;
+    public JComboBox<Producer> cboManufacturer;
+    public JButton btnSearch, btnAdd, btnUpdate, btnDelete,btnClear,btnMenu;
     public DefaultTableModel tblModel;
     public JTable tblWine;
 
@@ -25,13 +27,17 @@ public class WineUI extends View{
         txtYear = new JTextField(10);
         JLabel lblImage = new JLabel("Image:");
         txtImage = new JTextField(20);
+
         JLabel lblManufacturer = new JLabel("Manufacturer:");
-        cboManufacturer = new JComboBox<String>(new String[]{"1", "2", "3", "4"});
+        cboManufacturer = new JComboBox<>();
+
         btnSearch = new JButton("Search");
         btnAdd = new JButton("Add");
         btnUpdate = new JButton("Update");
         btnDelete = new JButton("Delete");
         btnClear = new JButton("Clear");
+        btnMenu = new JButton("Menu");
+
         tblModel = new DefaultTableModel(new Object[]{"Code", "Name", "Wine Content", "Year", "Image","Manufacturer"}, 0);
         tblWine = new JTable(tblModel);
 
@@ -57,7 +63,9 @@ public class WineUI extends View{
         pnlButtons.add(btnAdd);
         pnlButtons.add(btnUpdate);
         pnlButtons.add(btnDelete);
+        pnlButtons.add(btnSearch);
         pnlButtons.add(btnClear);
+        pnlButtons.add(btnMenu);
 
         JScrollPane scrollPane = new JScrollPane(tblWine);
 

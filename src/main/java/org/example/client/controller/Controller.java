@@ -65,7 +65,7 @@ public class Controller {
       view.showMessage(ex.getStackTrace().toString());
     }
   }
-  private void closeConnection(){
+  public void closeConnection(){
     try {
 
       myClient.close();
